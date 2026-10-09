@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI 电话控制台</title><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script></head>
+<body><main>
+<header><div><div class="eyebrow">ESP32 · iPhone · AI 实时语音</div><h1>AI 电话控制台<span class="badge">本机</span></h1><p>连接你的手机，让 AI 完成沟通。每次通话，都有记录可回看。</p></div><div class="top-status" id="topStatus">正在读取状态…</div></header>
+<div id="notice" role="status" class="notice hidden"></div>
+<div class="workspace"><section class="card setup"><div class="section-head"><div><span class="step">01</span><h2>连接与检测</h2></div><span class="subtle">不会拨号</span></div>
+<div class="checks"><div class="check" id="usbCheck"></div><div class="check" id="firmwareCheck"></div><div class="check" id="phoneCheck"></div><div class="check" id="apiCheck"></div></div>
+<label for="provider">对话渠道</label><select id="provider"><option value="doubao">豆包 O2</option><option value="openai">OpenAI Realtime</option></select>
+<label for="apiKey"><span id="apiKeyLabel">豆包语音 API Key</span> <span class="subtle" id="keyStatus">尚未保存</span></label><input id="apiKey" type="password" autocomplete="off" placeholder="输入一次并保存，之后可留空" maxlength="512"><button type="button" id="saveKey" class="secondary full">保存此渠道的 Key</button><p class="hint" id="keyHint">Key 保存在 macOS 钥匙串。各渠道独立保存，关闭页面或重启后仍可使用。</p>
+<div id="voiceControls"><label for="voice">通话音色</label><select id="voice"><option value="zh_female_vv_jupiter_bigtts">默认女声 · VV</option><option value="zh_male_yunzhou_jupiter_bigtts">云舟 · 男声</option><option value="custom">自定义音色</option></select>
+<div id="customVoice" class="hidden"><label for="voiceName">音色名称</label><input id="voiceName" placeholder="例如：我的音色" maxlength="80"><label for="voiceId">音色 ID</label><input id="voiceId" placeholder="填写控制台中的音色 ID" maxlength="128"></div></div><p id="openaiVoiceInfo" class="hint hidden">OpenAI 使用当前配置的默认音色。自定义豆包音色需要你自己的音色授权。</p>
+<div id="portWrap" class="hidden"><label for="port">已连接设备</label><select id="port"></select></div>
+<button id="connect" class="secondary full">连接设备并检测渠道</button><p class="hint" id="connectHint">板子通过 USB-C 接电脑；iPhone 蓝牙连接 ESP32 Phone Bridge。</p>
+</section>
+<section class="card dial"><div class="section-head"><div><span class="step">02</span><h2>发起通话</h2></div><span class="subtle">点击开始才拨号</span></div>
+<form id="callForm"><label for="savedNumber">常用号码</label><select id="savedNumber"><option value="" selected>手动输入号码</option></select>
+<label for="number">电话号码</label><input id="number" type="tel" autocomplete="tel" value="" placeholder="填写你获准联系的完整号码" maxlength="31" required><p class="hint">公开版不预置私人号码，请自行填写。</p>
+<div class="demo-case"><div><div class="demo-eyebrow">沟通案例</div><h3>猎头顾问 · 候选人初聊</h3><p>亲切、有交流感 · 了解求职意向与岗位偏好</p></div><button type="button" id="headhunterDemo" class="secondary">填入案例</button><p class="demo-note">填入后可继续编辑，仅替换下方沟通内容。</p></div>
+<label for="task">希望 AI 沟通什么？</label><textarea id="task" rows="4" maxlength="4000" required>这是一次我自己的手机通话测试。开场说明你是 AI 测试助手，这次电话将录音用于测试总结。用中文简单聊天，确认对方能否清楚听到声音，询问是否有卡顿或延迟；听取反馈后简短总结并道别。</textarea>
+<div class="call-options"><div><label for="limit">最长通话时间</label><select id="limit"><option value="60">1 分钟</option><option value="120" selected>2 分钟</option><option value="180">3 分钟</option><option value="300">5 分钟</option><option value="600">10 分钟</option></select></div><div class="record-info"><span class="dot green"></span> 自动保存双方录音与总结</div></div>
+<div class="actions"><button type="submit" id="start" class="primary" disabled>开始 AI 通话</button><button type="button" id="hangup" class="danger" disabled>结束通话</button></div><p class="hint" id="startHint">完成左侧检测后即可开始。失败不会自动重拨。</p></form>
+<div class="progress-box"><div class="section-head"><h3>当前通话</h3><span id="callTimer" class="timer">—</span></div><div class="progress-steps" id="progressSteps"></div><p id="callStatus" class="subtle">尚未发起通话</p><div id="audioEvidence" class="evidence">通话开始后显示双向音频状态。</div></div>
+<div class="live-box"><div class="section-head"><h3>实时对话</h3><button type="button" id="followLive" class="text-button">已跟随最新</button></div><p id="liveStatus" class="subtle">接通后显示双方文字 · 通话中约每秒更新</p><div id="liveTranscript" class="live-transcript" role="log" aria-label="双方实时对话" aria-live="polite" aria-relevant="additions text"><p class="empty">等待通话接通…</p></div><p class="source-note">识别中的文字可能修正；AI 文字是生成内容，可能先于播放，打断后可能未完整播出。显示最近 60 条。</p></div>
+</section></div>
+<section class="card results"><div class="section-head"><div><span class="step">03</span><h2>通话记录与结果</h2></div><button id="refresh" class="text-button">刷新记录 ↻</button></div><div class="results-grid"><nav id="history" aria-label="通话历史"><p class="empty">正在读取记录…</p></nav><article id="detail"><div class="empty large"><span>每次沟通，都留下可回看的结果</span><p>从左侧选择一次通话，查看录音、转写与总结。</p></div></article></div></section>
+<footer>数据保存在这台电脑 · 总结可能有转写误差，重要信息请对照录音核实</footer>
+</main></body></html>

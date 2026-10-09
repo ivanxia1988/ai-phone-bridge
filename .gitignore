@@ -1,0 +1,14 @@
+.venv/
+.pio-core/
+firmware/.pio/
+firmware/sdkconfig
+firmware/sdkconfig.old
+firmware/sdkconfig.*
+!firmware/sdkconfig.defaults
+work/
+calls/
+__pycache__/
+.pytest_cache/
+.env
+.env.*
+*.sock

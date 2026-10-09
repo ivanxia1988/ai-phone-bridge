@@ -1,0 +1,33 @@
+# ESP-IDF / CMake build outputs
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# ESP-IDF local configuration
+sdkconfig
+sdkconfig.old
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# OS / misc
+.DS_Store
+Thumbs.db
+*.log
+
+# Runtime artifacts
+downlink.bin
+tmp_*.wav
+tmp_*.bin
+
+# Optional local ffmpeg bundle (no longer required)
+ffmpeg/
